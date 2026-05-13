@@ -1,0 +1,41 @@
+diff --git a/packages/web/scripts/postbuild.js b/packages/web/scripts/postbuild.js
+index abdc58b0..57a658f8 100644
+--- a/packages/web/scripts/postbuild.js
++++ b/packages/web/scripts/postbuild.js
+@@ -74,3 +74,36 @@ try {
+ } catch (error) {
+   console.error('❌ Error sanitizing paths:', error.message);
+ }
++
++// ============================================================================
++// DIST FILES BANNER
++// ============================================================================
++// Adds a version banner to the top of the built CSS and JS files
++// for better identification and version tracking
++
++const pkg = require('../package.json');
++
++const banner = `/* Custom GCDS Components v${pkg.version} - ${new Date().toISOString().split('T')[0]} */`;
++const files = [
++  path.join(__dirname, '../dist/gcds/gcds.css'),
++  path.join(__dirname, '../dist/gcds/gcds.esm.js'),
++];
++
++files.forEach(filePath => {
++  if (!fs.existsSync(filePath)) {
++    console.warn(`File not found: ${filePath}`);
++    return;
++  }
++
++  const content = fs.readFileSync(filePath, 'utf8');
++
++  // Prevent duplicate banners
++  if (content.startsWith('/* Custom GCDS Components')) {
++    return;
++  }
++
++  // Add the banner
++  fs.writeFileSync(filePath, `${banner}\n${content}`);
++
++  console.log(`Banner added to ${path.basename(filePath)}`);
++});
